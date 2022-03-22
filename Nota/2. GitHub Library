@@ -1,0 +1,12 @@
+
+* Third-Party Libraries vs Raw Requests
+- In order to make interacting with their APIs easier, many services provide Python libraries that wrap the API calls
+- Library should be preferred if one is available
+
+* GitHub Library
+- Github client class (github.Github)
+- PyGithub automatically translates GitHub’s REST responses into Python objects
+
+* Django Integration
+- 
+
