@@ -1,0 +1,35 @@
+
+* The Site & User Behavior
+- Remember we should keep in mind that searching the local database is generally a lot faster than a remote API
+- We’ll only query the API if the search term hasn’t been searched for in the past 24 hours
+- Otherwise, we only search our local database
+
+* Writing API Client Rules
+1 Have a single method that’s used to make requests
+- Just one place to add authentication and error handling
+2 It should not need to know about Django at all
+- It will allow us to refactor more easily and re-use the code in a non-Django project
+3 The transformation from JSON to Python should take place in the client
+- The consumers of the client should not need to know about the data structure of the response
+- This means our API can change and only our client code needs to be updated, not different parsing code throughout our codebase
+
+* 
+- Define a class that acts as an intermediary/transformer between the JSON dictionary returned from OMDb and raw Python data
+- Have all the transformations from API to Python into a single place
+
+* yield Keyword
+- It turns a Python function into a generator
+- This means the function's "return value" must be iterated across
+
+* Wrap-Up
+1 API keys can be fetched from Django settings
+- Consider using a SecretValue field to retrieve them from the environment
+2 Your REST client should have a single method that’s called to make requests
+- This means you have only one place to implement authentication and HTTP error handling
+3 REST clients should not be directly tied to Django
+4 The client should also not be responsible for inserting any data into the Django database
+5 It is OK to create a helper class or function that will instantiate the REST client from the Django settings
+6 Don’t return the response body directly from your client
+- Instead, use a transformation function
+
+
