@@ -1,0 +1,68 @@
+
+
+* Background Tasks
+- Usually execution times of web processes are limited
+- Any process you try to start that takes longer than the timeout might be cut short, and fail to complete
+
+* Celery
+- It’s a library that is used to run tasks outside of the main web process
+- At a high level:
+1 Tasks are put into a queue
+2 The main webserver process can then continue, and return a response to the client
+3 Meanwhile, a broker reads from the queue and passes the task on to worker(s) that process/execute the task 
+4 Then it puts the results back into a queue or database
+5 When a task has queued a reference to the task is returned
+6 Later, we can use this reference to get the result of the task
+
+* Broker Selection
+- Celery supports a number of brokers for queueing messages
+- You can choose to run your own backend queue software like Redis or RabbitMQ, or use a cloud service like Amazon SQS
+- We’re going to use Redis as the broker
+- ou might consider using Redis as your general cache for Django if you're using it for your message brokering as well
+
+* Celery Setup
+- In settings.py
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+
+* Defining and Running Celery Tasks
+- Any function can be turned into a Celery task
+- All you need to do is decorate it
+- Register to the Celery app
+@shared_task
+- Decorated functions now have a new attribute: delay()
+- This is used to send the function off to be run in the Celery worker
+my_long_running_function("arg1", 2) #execute as normal
+my_long_running_function.delay("arg1", 2) #with celery
+- A delayed function actually returns an AsyncResult instance (celery.result.AsyncResult)
+- The AsyncResult has a get() method which, when called, waits for the result of the tasks and returns it
+- Normal
+value = my_long_running_function("arg1", 2)
+print(value)
+- With Celery
+res = my_long_running_function.delay("arg1", 2)
+value = res.get()
+print(value)
+- get() has timeout argument.
+
+* Fetching Results Later
+- Fetching the ID of an AsyncResult
+res = my_long_running_function.delay("arg1", 2)
+task_id = res.id
+- Later on the AsyncResult can be retrieved like this
+from course4_proj.celery import app  # get a reference to the celery app
+res = app.AsyncResult(task_id)  # load the AsyncResult
+value = res.get()  # get the value
+- Go checking if the result is ready
+while True:
+    try:
+        value = res.get(timeout=2)  # wait two seconds
+        break  # once we have a value, break from the loop
+    except TimeoutError:
+        # print a message if no result after two seconds, then continue looping
+        print("Task not finished after another two seconds, waiting again.")
+
+
+
+
+
