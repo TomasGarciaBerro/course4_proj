@@ -1,0 +1,33 @@
+
+
+* Intro & Purpose
+- Django Signals are used to listen to events throughout the lifetime of a Django application executing
+- This allows a Django project to easily run code in response to events
+
+* Connecting Receivers
+- Receiver definition
+def signal_receiver(sender, **kwargs):
+    print(f"Received signal from {sender}")
+- Send signal
+from django.core.signals import request_finished
+request_finished.connect(signal_receiver)
+- How to hook up a signal to a receiver
+1 connect() method on the signal
+2 @receiver(request_finished) on the signal_receiver
+
+* Preventing Duplicate Signals
+- dispatch_uid argument
+
+* Where to Put Handlers
+signals.py inside the app they are for
+
+* Sending Your Own Signals
+
+
+
+
+
+
+
+
+
