@@ -1,0 +1,69 @@
+
+
+* Scheduled and Periodic Tasks
+- You can use a system tool like cron to schedule tasks
+- Celery beat is a scheduler that starts Celery tasks
+- There are two ways tasks can be added to the scheduler:
+1 By calling the add_periodic_task() method on the Celery app
+2 By adding tasks to a backend which the scheduler reads from periodically
+
+* Task Signatures
+- Celery provides a Signature object that combined the task and arguments into a single object
+
+* Add Periodic Task
+- add_periodic_task() method has two required arguments
+1 schedule
+2 sig
+3 name (optional)
+app.add_periodic_task(60.0, search_and_save.s("star wars"))
+- Other types of schedules that can be used
+- Celery provides crontab (el fromato para schedule de * * * * *) and solar schedules (basado en solar events)
+app.add_periodic_task(crontab(
+    minute=30,
+    hour=7,
+    day_of_month=1
+), search_and_save.s("star wars"))
+app.add_periodic_task(
+    solar("sunrise", -36.848461, 174.763336),
+    search_and_save.s("star wars")
+)
+
+* Django Celery Beat
+- django-celery-beat works with the Django database
+- django-celery-beat provides a number of models
+django_celery_beat.models
+
+* Periodic Task
+- This model is how django-celery-beat refers to a Celery task
+- It stores the task and arguments
+- Other fields: enabled, start_time, one_off
+- It stores last_run_at
+- There is a field for priorization
+- Before a PeriodicTask can be scheduled it must be associated with a schedule object
+- We have to set one of these fields: interval, crontab, solar or clocked
+pt = PeriodicTask.objects.create(
+    name="Daily python movie search",
+    interval=day_schedule,
+    args=args,
+    task="movies.tasks.search_and_save"
+)
+
+* Interval Schedule
+- Two arguments
+1 period
+2 every
+
+* Crontab Schedule
+- El formato de *
+
+* Celery Beat Process
+- Starting Celery beat is similar to starting a Celery worker
+- We just start celery with the beat command instead of worker
+celery -A course4_proj beat -l INFO
+- Only run tasks that have been scheduled by calling the add_periodic_task()
+- To run the schedules in the database we have to add argument --scheduler
+celery -A course4_proj beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+- Remember: Celery beat doesn’t actually execute the tasks, instead it triggers the task for a Celery worker to run
+
+* Wrap-Up
+- As with the Celery worker, if you want the beat process to run automatically at system startup you will need to use something like supervisord, systemd or init to execute it
